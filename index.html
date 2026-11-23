@@ -33,7 +33,7 @@ label{display:flex;justify-content:space-between;gap:8px;align-items:center;marg
 </style></head><body><div id="app"></div>
 <script>
 /* ===== CONFIGURAZIONE FIREBASE: incolla qui i dati del tuo progetto ===== */
-const firebaseConfig = {
+const FB={
   apiKey: "AIzaSyAA03vOHJFII0UlWD5dehEJsoQYzJ5pesI",
   authDomain: "bestia-f6b9e.firebaseapp.com",
   projectId: "bestia-f6b9e",
@@ -118,7 +118,7 @@ const maxT=n=>n*4+1<=40?[3,4]:[3];
 const home=()=>`<h1>🃏 Bestia</h1><div class=box><h2>Come vuoi giocare?</h2>
 <div class=row><button class=pri data-a=loc>In locale (un solo dispositivo)</button></div>
 <div class=row><button class=pri data-a=onl ${FBOK?'':'disabled'}>Online con una stanza</button></div>
-${FBOK?'':'<small class=err>Online non disponibile: configurazione Firebase mancante o connessione assente. La modalità locale funziona.</small>'}</div>
+${FBOK?'':'<small class=err>Online non disponibile: configurazione Firebase mancante o connessione assente. La modalità locale funziona.<br>Dettaglio: '+esc(G.fbErr||'in caricamento…')+'</small>'}</div>
 <small>Regole: 40 carte, 3 carte a testa, briscola, obbligo di rispondere al seme e di tagliare. Chi gioca e non fa prese va in bestia.</small>`;
 const tSel=(n,v,id)=>`<label>Carte iniziali<select id=${id}>${maxT(n).map(t=>`<option ${t==v?'selected':''}>${t}</option>`).join('')}</select></label>`;
 const lsetup=()=>{const n=LS.names.length;return `<h1>Partita locale</h1><div class=box>
@@ -173,7 +173,7 @@ function render(){let h;
 const loadJs=u=>new Promise((ok,ko)=>{const s=document.createElement('script');s.src=u;s.onload=ok;s.onerror=ko;document.head.appendChild(s)});
 async function fbInit(){try{if(!FB.apiKey)throw 0;const b='https://www.gstatic.com/firebasejs/10.12.2/firebase-';
  await loadJs(b+'app-compat.js');await Promise.all([loadJs(b+'auth-compat.js'),loadJs(b+'firestore-compat.js')]);
- firebase.initializeApp(FB);auth=firebase.auth();db=firebase.firestore();G.uid=(await auth.signInAnonymously()).user.uid;FBOK=true}catch(e){FBOK=false}}
+ firebase.initializeApp(FB);auth=firebase.auth();db=firebase.firestore();G.uid=(await auth.signInAnonymously()).user.uid;FBOK=true}catch(e){FBOK=false;G.fbErr=!FB.apiKey?'apiKey vuota: configurazione non inserita in index.html':(e&&(e.code||e.message))||String(e);console.error(e)}}
 const R=()=>db.collection('bestia_rooms').doc(G.code),FV=()=>firebase.firestore.FieldValue;
 async function create(name){const code=Array.from({length:5},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ'[Math.random()*24|0]).join('');
  const ref=db.collection('bestia_rooms').doc(code);if((await ref.get()).exists)return create(name);
